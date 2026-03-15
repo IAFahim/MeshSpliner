@@ -13,8 +13,6 @@ namespace SplineLearn.Data
     {
         [ReadOnly] private NativeArray<float> _samples;
         private const int SampleCount = 16;
-        
-        
 
         public void Dispose()
         {
