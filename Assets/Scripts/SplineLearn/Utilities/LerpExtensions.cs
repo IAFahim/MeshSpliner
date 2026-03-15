@@ -1,7 +1,8 @@
-﻿using Unity.Burst;
+﻿using SplineLearn.Data;
+using Unity.Burst;
 using Unity.Mathematics;
 
-namespace SplineLearn.Data
+namespace SplineLearn.Utilities
 {
     public static class LerpExtensions
     {

@@ -1,14 +1,15 @@
-﻿using Unity.Burst;
+﻿using SplineLearn.Data;
+using Unity.Burst;
 using Unity.Mathematics;
 
-namespace SplineLearn.Data
+namespace SplineLearn.Utilities
 {
     public static class CenterExtensions
     {
         [BurstCompile]
         public static void Center(in this BoundsData boundsData, out float3 center)
         {
-            ScaledSumExtensions.ScaledSum(boundsData.min, boundsData.max, 0.5f, out center);
+            ScaledSumExtensions.ScaledSum(boundsData.min, boundsData.max, NumbersRef.Half, out center);
         }
     }
 }

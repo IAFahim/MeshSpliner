@@ -1,7 +1,7 @@
 ﻿using Unity.Burst;
 using Unity.Mathematics;
 
-namespace SplineLearn.Data
+namespace SplineLearn.Utilities
 {
     public static class ScaledSumExtensions
     {
