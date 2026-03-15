@@ -39,10 +39,11 @@ namespace SplineLearn.Utilities
             unsafe
             {
                 float* samplePtr = (float*)samples.GetUnsafePtr();
+                float maxSampleIndex = sampleCount - NumbersRef.One;
 
                 for (int i = 0; i < sampleCount; i++)
                 {
-                    float t = i / (sampleCount - NumbersRef.One);
+                    float t = i / maxSampleIndex;
                     samplePtr[i] = sourceCurve.Evaluate(t);
                 }
             }
