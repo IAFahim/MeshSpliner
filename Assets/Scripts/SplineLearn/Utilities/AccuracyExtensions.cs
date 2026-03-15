@@ -9,9 +9,9 @@ namespace SplineLearn.Utilities
     public static class AccuracyExtensions
     {
         [BurstCompile]
-        public static void ToSearchIntervalScalar(this Accuracy accuracy, out float scala)
+        public static void ToSearchIntervalScalar(this Accuracy accuracy, out float scalar)
         {
-            scala = accuracy switch
+            scalar = accuracy switch
             {
                 Accuracy.BestPerformance => 6f,
                 Accuracy.PreferPerformance => NumbersRef.Four,
