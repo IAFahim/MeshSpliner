@@ -1,4 +1,4 @@
-namespace SplineLearn.SplineLearn.Tests.Utilities
+namespace SplineLearn.Tests.Utilities
 {
     public class LerpExtensionsTests
     {

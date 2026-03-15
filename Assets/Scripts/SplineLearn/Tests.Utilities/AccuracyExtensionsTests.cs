@@ -2,7 +2,7 @@ using NUnit.Framework;
 using SplineLearn.Data;
 using SplineLearn.Utilities;
 
-namespace SplineLearn.SplineLearn.Tests.Utilities
+namespace SplineLearn.Tests.Utilities
 {
     public class AccuracyExtensionsTests
     {
