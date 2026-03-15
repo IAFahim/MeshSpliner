@@ -15,9 +15,9 @@ namespace SplineLearn.Utilities
         [BurstCompile]
         public static void CreateAndSampleCurve(
             this ref NativeArray<float> samples,
-            AnimationCurve sourceCurve,
+            in AnimationCurve sourceCurve,
             Allocator allocator,
-            int sampleCount
+            in int sampleCount
         )
         {
             samples = new NativeArray<float>(sampleCount, allocator, NativeArrayOptions.UninitializedMemory);
@@ -31,7 +31,7 @@ namespace SplineLearn.Utilities
         [BurstCompile]
         public static void SampleAnimationCurve(
             this NativeArray<float> samples,
-            AnimationCurve sourceCurve
+            in AnimationCurve sourceCurve
         )
         {
             int sampleCount = samples.Length;
