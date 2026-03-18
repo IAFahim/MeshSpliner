@@ -1,0 +1,20 @@
+{
+  "name": "SplineLearn.Jobs",
+  "rootNamespace": "",
+  "references": [
+    "GUID:2665a8d13d1b3f18800f46e256720795",
+    "GUID:d8b63aba1907145bea998dd612889d6b",
+    "GUID:38365bed7eb041a1ba98a5c99e460012",
+    "GUID:21d1eb854b91ade49bc69a263d12bee2",
+    "GUID:f92d624d83d74257a2e559b583780b44"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "allowUnsafeCode": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

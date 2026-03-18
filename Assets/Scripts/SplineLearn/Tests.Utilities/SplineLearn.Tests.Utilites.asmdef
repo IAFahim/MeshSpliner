@@ -1,0 +1,29 @@
+{
+  "name": "SplineLearn.Tests.Utilites",
+  "rootNamespace": "",
+  "references":[
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner",
+    "SplineLearn.Data",
+    "SplineLearn.Utilities",
+    "SplineLearn.Jobs",
+    "Unity.Mathematics",
+    "Unity.Splines",
+    "Unity.Collections"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms":[],
+  "allowUnsafeCode": true,
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints":[
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "versionDefines":[],
+  "noEngineReferences": false
+}
