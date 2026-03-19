@@ -149,7 +149,8 @@ namespace sc.splinemesher.pro.runtime
             }
             else
             {
-                meshData = default;
+                //Important to create empty arrays, as the CurveToMesh job requires all arrays to be initialized
+                meshData.CreateEmpty();
             }
 
             float meshLength = meshData.bounds.size.z;
@@ -207,21 +208,21 @@ namespace sc.splinemesher.pro.runtime
                     settings.collision.inputMesh.rotation = Vector3.zero;
                     settings.collision.inputMesh.alignment = Structs.Alignment.PivotPoint;
                 }
-                
 
                 ProcessInput(settings.collision.inputMesh, meshSize, meshCenter, ref inputColliderProcessJob);
                 colliderMeshData = inputColliderProcessJob.MeshData;
-
-                if (!createMesh)
-                {
-                    meshData = colliderMeshData;
-                }
                 
                 //Debug.Log($"Created collider input ({settings.collision.inputMesh.shape}) with min size: {meshSize}. Pivot: {meshCenter}. {colliderMeshData.IsCreated}");
             }
             else
             {
-                colliderMeshData = default;
+                colliderMeshData.CreateEmpty();
+            }
+            
+            Structs.InputMeshData sourceMeshData = meshData;
+            if (!createMesh)
+            {
+                sourceMeshData = colliderMeshData;
             }
             
             Profiler.EndSample();
@@ -242,9 +243,9 @@ namespace sc.splinemesher.pro.runtime
             
             Profiler.EndSample();
             
-            //Debug.Log($"GenerateGeometry with meshData: {meshData.bounds.size}", this);
+            //Debug.Log($"GenerateGeometry with meshData: {sourceMeshData.bounds.size}", this);
 
-            GenerateGeometry(nativeSpline, splineIndex, splineMeshData, meshData, createMesh && meshCreated, colliderMeshData, createCollider && colliderMeshData.IsCreated);
+            GenerateGeometry(nativeSpline, splineIndex, splineMeshData, sourceMeshData, createMesh && meshCreated, colliderMeshData, createCollider && colliderMeshData.IsCreated);
 
             UpdateCaps(nativeSpline, splineIndex, splineMeshData, settings);
             SetCapColliderStates(startCapDisabled, endCapDisabled, out var _, out var _);
@@ -257,9 +258,13 @@ namespace sc.splinemesher.pro.runtime
                 if (createCollider)
                 {
                     segment.SetColliderSettings(settings.collision.layer, settings.collision.includeLayers, settings.collision.excludeLayers, settings.collision.isKinematic, settings.collision.convex, 
-                        settings.collision.isTrigger, settings.collision.provideContacts);
+                        settings.collision.isTrigger, settings.collision.provideContacts, settings.collision.physicsMaterial);
                 }
             }
+            
+            splineMeshData.Dispose();
+            meshData.Dispose();
+            colliderMeshData.Dispose();
             
             inputMeshProcessJob.Dispose();
             inputColliderProcessJob.Dispose();
@@ -316,7 +321,7 @@ namespace sc.splinemesher.pro.runtime
             inputProcessHandle.Complete();
         }
         
-        private void GenerateGeometry(NativeSpline nativeSpline, int splineIndex, SplineCurveMeshData splineMeshData, Structs.InputMeshData meshData, bool createMesh, Structs.InputMeshData colliderData, bool createCollider)
+        private void GenerateGeometry(NativeSpline nativeSpline, int splineIndex, SplineCurveMeshData splineMeshData, Structs.InputMeshData inputMeshData, bool createMesh, Structs.InputMeshData colliderData, bool createCollider)
         {
             float splineLength = nativeSpline.GetLength();
 
@@ -335,7 +340,7 @@ namespace sc.splinemesher.pro.runtime
             
             void CalculateMeshLength(ref float meshLength, ref float meshOccupiedLength)
             {
-                meshLength = math.max(MIN_MESH_LENGTH, meshData.bounds.size.z * zScale);
+                meshLength = math.max(MIN_MESH_LENGTH, inputMeshData.bounds.size.z * zScale);
                 meshOccupiedLength = meshLength + settings.distribution.spacing;
             }
             CalculateMeshLength(ref meshLength, ref meshOccupiedLength);
@@ -482,7 +487,7 @@ namespace sc.splinemesher.pro.runtime
                     tileLength = meshOccupiedLength
                 };
                 
-                curveToMeshJobs[i].Setup(meshData, colliderData, nativeSpline, splinePoints, info, curveRange, splineLength, 
+                curveToMeshJobs[i].Setup(inputMeshData,  createMesh, colliderData, createCollider, nativeSpline, splinePoints, info, curveRange, splineLength, 
                     segment.transform.worldToLocalMatrix, settings, splineMeshData, hits);
                 
                 jobHandles[i] = curveToMeshJobs[i].Schedule();
@@ -521,11 +526,10 @@ namespace sc.splinemesher.pro.runtime
 
                         //Assign a name. This has CG allocations due to string concatenation but remains important to identify meshes in a build report or the memory profiler
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                        segmentMesh.name = objName + CurveToMesh.kMeshName + i;
+                        segmentMesh.name = objName + CurveToMesh.kMeshSuffix + i;
 #endif
                         segment.mesh = curveToMeshJobs[i].CreateMesh(ref segmentMesh, i, settings.output.keepReadable, drawWireFrame);
                         
-                        segment.EnsureUniqueMesh();
                         segment.SetMaterials(settings.renderer.materials);
                         segment.SetRendererState(true);
                         segment.SetRendererParameters(settings.renderer.shadowCastingMode, settings.renderer.lightProbeUsage, settings.renderer.reflectionProbeUsage, settings.renderer.renderingLayerMask, settings.output.forceMeshLod, settings.output.lodSelectionBias);
@@ -551,6 +555,8 @@ namespace sc.splinemesher.pro.runtime
                         
                         segment.collisionMesh = collisionMesh;
                     }
+                    
+                    segment.EnsureUniqueMeshes();
                     
                     //Mesh has been recreated, safe to dispose of related arrays
                     curveToMeshJobs[i].Dispose();

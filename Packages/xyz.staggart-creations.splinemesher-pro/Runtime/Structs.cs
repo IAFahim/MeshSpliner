@@ -42,6 +42,19 @@ namespace sc.splinemesher.pro.runtime
             public BoundsData bounds;
             
             public bool IsCreated => positions.IsCreated;
+
+            public void CreateEmpty()
+            {
+                vertexCount = 0;
+                positions = new NativeArray<float3>(0, Allocator.Persistent);
+                normals = new NativeArray<float3>(0, Allocator.Persistent);
+                tangents = new NativeArray<float4>(0, Allocator.Persistent);
+                uv = new NativeArray<float2>(0, Allocator.Persistent);
+                colors = new NativeArray<float4>(0, Allocator.Persistent);
+                
+                sourceTriangles = new NativeArray<ushort>(0, Allocator.Persistent);
+                sourceSubmeshRanges = new NativeArray<int2>(0, Allocator.Persistent);
+            }
             
             public void Dispose()
             {

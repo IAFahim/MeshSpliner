@@ -149,7 +149,7 @@ namespace sc.splinemesher.pro.editor
                 }
                 if (meshers.Length == 0 && meshers2.Length > 0)
                 {
-                    EditorGUILayout.HelpBox("Migration complete. You may need to check other scenes.", MessageType.Info);
+                    EditorGUILayout.HelpBox("Instance migration complete. You may need to check other scenes.", MessageType.Info);
                 }
             }
 
@@ -197,6 +197,7 @@ namespace sc.splinemesher.pro.editor
                     mesher2.SetSplineContainer(mesher1.splineContainer, false);
                     mesher2.root = mesher1.outputObject.transform;
                     mesher2.SetInputMesh(mesher1.sourceMesh);
+                    mesher2.settings.input.rotation = mesher1.rotation;
                     mesher2.splineChangeTrigger = (SplineMesher.SplineChangeTrigger)mesher1.splineChangeMode;
                     mesher2.rebuildTriggers = (SplineMesher.RebuildTriggers)mesher1.rebuildTriggers;
                     
@@ -399,8 +400,13 @@ namespace sc.splinemesher.pro.editor
 
             void Refresh()
             {
-                meshers = FindObjectsOfType<SplineMesher1>();
-                meshers2 = FindObjectsOfType<SplineMesher2>();
+                #if UNITY_6000_4_OR_NEWER
+                meshers = FindObjectsByType<SplineMesher1>(FindObjectsInactive.Include);
+                meshers2 = FindObjectsByType<SplineMesher2>(FindObjectsInactive.Include);
+                #else
+                meshers = FindObjectsByType<SplineMesher1>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                meshers2 = FindObjectsByType<SplineMesher2>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                #endif
                 
                 //Also populate the `prefabs` list with prefabs in the project that have a SplineMesher1 component
                 mesherPrefabs.Clear();

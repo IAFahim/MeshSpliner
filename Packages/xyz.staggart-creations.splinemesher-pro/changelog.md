@@ -1,3 +1,18 @@
+1.0.6 (March 17th 2026)
+
+Added:
+- Collision section, field to assign a Physics Material
+- Curve Mesher: vertex color width gradient "Mirrored" option. If disabled the gradient runs from left to right.
+- Fill Mesher: Reverse Faces and Flip Normals options.
+
+Changed:
+- Updated Collections package dependency to v2.6.2
+
+Fixed:
+- Migration tool, rotation value not being copied over.
+- Deprecation warnings regarding "GetInstanceID" usage in Unity 6.4+
+- Collider meshes of a duplicated Spline Mesher appearing to be linked to the original.
+
 1.0.5 (March 13th 2026)
 
 Changed:

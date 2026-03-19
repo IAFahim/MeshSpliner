@@ -300,7 +300,7 @@ namespace sc.splinemesher.pro.runtime
         
         public virtual void Dispose()
         {
-            DisposeSplineCache();
+            DisposeNativeSplines();
         }
 
         /// <summary>

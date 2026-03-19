@@ -20,6 +20,7 @@ namespace sc.splinemesher.pro.runtime
     [BurstCompile(FloatPrecision.Low, FloatMode.Fast, CompileSynchronously = true)]
     public struct CalculateNormals : IJob, IDisposable
     {
+        private bool flipped;
         private int vertexCount;
         [ReadOnly] private NativeArray<float3> vertices;
         [ReadOnly] private NativeList<int> triangles;
@@ -30,8 +31,9 @@ namespace sc.splinemesher.pro.runtime
 
         private NativeArray<float3> tan1, tan2;
         
-        public void Setup(NativeArray<float3> vertices, NativeArray<float4> uvs, NativeList<int> triangles)
+        public void Setup(NativeArray<float3> vertices, NativeArray<float4> uvs, NativeList<int> triangles, bool flip)
         {
+            this.flipped = flip;
             this.vertices = vertices;
             this.uvs = uvs;
             this.triangles = triangles;
@@ -102,6 +104,8 @@ namespace sc.splinemesher.pro.runtime
             {
                 float3 n = normals[i];
                 float3 t = tan1[i];
+
+                if (flipped) n = -n;
 
                 //Normalize normal
                 if (math.lengthsq(n) > 0.0001f)

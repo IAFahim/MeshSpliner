@@ -111,6 +111,8 @@ namespace sc.splinemesher.pro.editor
                     PerformMaterialDragAndDrop(ref requiresRebuild);
                 }
 
+                EditorGUILayout.Separator();
+                
                 foreach (UI.Section section in sections)
                 {
                     section.DrawHeader(() => SwitchSection(section));
@@ -225,8 +227,10 @@ namespace sc.splinemesher.pro.editor
             }
         }
         
-        private void OnDisable()
+        new void OnDisable()
         {
+            base.OnDisable();
+            
             foreach (var section in sections)
             {
                 section.Disable();

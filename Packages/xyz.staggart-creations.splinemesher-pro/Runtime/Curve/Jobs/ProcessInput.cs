@@ -34,12 +34,9 @@ namespace sc.splinemesher.pro.runtime
         private Mesh.MeshDataArray dataArray;
 
         public Structs.InputMeshData MeshData => meshData[0];
-        public Structs.BoundsData Bounds => MeshData.bounds;
-        
+
         private bool3 invertAxis;
         private Structs.Alignment alignment;
-        
-        public bool isCreated => meshData.IsCreated;
         
         public void Setup(CurveMeshSettings.InputMesh settings, float3 minSize, float3 offset)
         {
@@ -257,7 +254,6 @@ namespace sc.splinemesher.pro.runtime
         {
             if (meshData.IsCreated)
             {
-                meshData[0].Dispose();
                 meshData.Dispose();
                 dataArray.Dispose();
             }

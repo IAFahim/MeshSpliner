@@ -152,7 +152,6 @@ namespace sc.splinemesher.pro.runtime
 #endif
                 
                 segment.mesh = GenerateMesh(spline, splinePointsJob.Points, clockwise, bounds, m_triangleSize, settings.output.keepReadable, ref mesh);
-                segment.EnsureUniqueMesh();
                 
                 segment.SetMaterial(settings.renderer.material);
                 segment.SetRendererParameters(settings.renderer.shadowCastingMode, settings.renderer.lightProbeUsage, settings.renderer.reflectionProbeUsage, settings.renderer.renderingLayerMask, settings.output.forceMeshLod, settings.output.lodSelectionBias);
@@ -175,9 +174,11 @@ namespace sc.splinemesher.pro.runtime
                 segment.SetColliderEnabled(true);
                 segment.gameObject.layer = settings.collision.layer;
                 
-                segment.SetColliderSettings(settings.collision.layer, settings.collision.includeLayers, settings.collision.excludeLayers, false, false, false, settings.collision.provideContacts);
+                segment.SetColliderSettings(settings.collision.layer, settings.collision.includeLayers, settings.collision.excludeLayers, false, false, false, settings.collision.provideContacts, settings.collision.physicsMaterial);
                 segment.collisionMesh = collisionMesh;
             }
+            
+            segment.EnsureUniqueMeshes();
             
             splinePointsJob.Dispose();
         }
@@ -300,7 +301,7 @@ namespace sc.splinemesher.pro.runtime
             
             //Triangles
             Triangulate triangulateJob = new Triangulate();
-            triangulateJob.Setup(gridSize, m_triangleSize, positions, pointStates, indexMapping);
+            triangulateJob.Setup(gridSize, m_triangleSize, settings.topology.reverseFaces, positions, pointStates, indexMapping);
 
             JobHandle triangulateJobHandle = triangulateJob.Schedule(gridJobHandle);
             triangulateJobHandle.Complete();
@@ -326,7 +327,7 @@ namespace sc.splinemesher.pro.runtime
             
             //Normals & tangents
             CalculateNormals normalsJob = new CalculateNormals();
-            normalsJob.Setup(positions, uv0, triangles);
+            normalsJob.Setup(positions, uv0, triangles, settings.topology.flipNormals);
 
             JobHandle normalsJobHandle = normalsJob.Schedule();
             normalsJobHandle.Complete();
@@ -396,6 +397,15 @@ namespace sc.splinemesher.pro.runtime
         private Mesh CreateMesh(NativeArray<Vertex> vertices, Bounds bounds, bool readable, ref Mesh mesh)
         {
             if (Application.isPlaying) readable = true;
+            
+            //Additional triangles are created for LODs, which creates a mismatch when trying to update the original triangles
+            //Clear the mesh, requiring LODs to be recreated.
+            #if UNITY_6000_2_OR_NEWER
+            if (mesh.lodCount > 1)
+            {
+                mesh.Clear();
+            }
+            #endif
             
             #if UNITY_EDITOR
             //Destroy and recreate if readable state doesn't match

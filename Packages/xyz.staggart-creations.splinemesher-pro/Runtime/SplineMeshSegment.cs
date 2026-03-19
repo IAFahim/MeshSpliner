@@ -16,8 +16,14 @@ using UnityEngine.Rendering;
 using UnityEditor;
 #endif
 
+#if !UNITY_6000_0_OR_NEWER
+using PhysicsMaterial = UnityEngine.PhysicMaterial;
+#endif
+
 namespace sc.splinemesher.pro.runtime
 {
+    [AddComponentMenu("")] //Hide
+    [DisallowMultipleComponent]
     public class SplineMeshSegment : MonoBehaviour
     {
         [HideInInspector] [SerializeField]
@@ -34,9 +40,6 @@ namespace sc.splinemesher.pro.runtime
         [SerializeField] [HideInInspector]
         private MeshCollider meshCollider;
         
-        [SerializeField] [HideInInspector]
-        private Mesh m_CollisionMesh;
-
         /// <summary>
         /// The generated mesh
         /// </summary>
@@ -53,7 +56,8 @@ namespace sc.splinemesher.pro.runtime
                 if(!meshFilter.sharedMesh) 
                 {
                     meshFilter.sharedMesh = new Mesh();
-                    meshID = meshFilter.GetInstanceID();
+                    
+                    StoreID();
                 }
                 return meshFilter.sharedMesh;
             }
@@ -65,32 +69,70 @@ namespace sc.splinemesher.pro.runtime
         /// </summary>
         public Material[] materials => meshRenderer.sharedMaterials;
 
-        //Save the mesh's hashcode to verify against
-        //Avoids having to recreate a new mesh every rebuild operation
+        //Save a unique ID to verify against
+        //Avoids having to recreate a new mesh objects every rebuild operation
         //Whilst ensuring that does happen when duplicating a mesh object
-        [SerializeField] [HideInInspector] private int meshID;
+        [SerializeField] [HideInInspector]
+        [UnityEngine.Serialization.FormerlySerializedAs("meshID")] //Not needed, but gracefully retains the old value
+#if UNITY_6000_3_OR_NEWER
+        private EntityId segmentID;
+#else
+        private int segmentID;
+#endif
 
-        [ContextMenu("Force Unique Mesh")]
+        [ContextMenu("Force Unique Meshes")]
         private void ForceUniqueMesh()
         {
-            meshID = 0;
-            EnsureUniqueMesh();
+#if UNITY_6000_3_OR_NEWER
+            segmentID = new EntityId();
+#else
+            segmentID = 0;
+#endif
+
+            EnsureUniqueMeshes();
+        }
+
+        private void StoreID()
+        {
+#if UNITY_6000_3_OR_NEWER
+            segmentID = this.GetEntityId();
+#else
+            segmentID = this.GetInstanceID();
+#endif
         }
         
-        internal void EnsureUniqueMesh()
+        //Render and collision meshes are passed along by reference
+        //When duplicating a Spline Mesher its created meshes will be linked to the original
+        //This function safeguards against this and makes new - unique - copies of the meshes for this instance.
+        internal void EnsureUniqueMeshes()
         {
-            if (!meshFilter.sharedMesh) return;
+#if UNITY_6000_3_OR_NEWER
+            EntityId hash = this.GetEntityId();
+#else
+            int hash = this.GetInstanceID();
+#endif
             
-            int hash = meshFilter.GetInstanceID();
-            if (meshID != hash)
+            //Note: Instance/Entity ID is not persistent between sessions and domain reloads
+            //But this is acceptable as it merely incurs the duplication process once
+            var changed = hash != segmentID;
+            
+            //if(changed) Debug.Log($"Mesh segment {gameObject.name} does not belong to original owner ({hash}!={segmentID}). Duplicating mesh objects.", this);
+            
+            segmentID = hash;
+            
+            if (changed == false) return;
+            
+            if (meshFilter.sharedMesh)
             {
-                //Debug.Log($"Mesh ID changed from {meshID} to {hash}");
-                
                 //Duplicate
                 var newMesh = Instantiate(mesh);
                 meshFilter.mesh = newMesh;
-                
-                meshID = meshFilter.GetInstanceID();
+            }
+
+            if (meshCollider && meshCollider.sharedMesh)
+            {
+                var newCollider = Instantiate(collisionMesh);
+                meshCollider.sharedMesh = newCollider;
             }
         }
 
@@ -103,9 +145,9 @@ namespace sc.splinemesher.pro.runtime
             if (state && !meshCollider)
             {
                 meshCollider = this.gameObject.AddComponent<MeshCollider>();
-                // Ensure we have a dedicated collision mesh
-                if (!m_CollisionMesh) m_CollisionMesh = new Mesh();
-                meshCollider.sharedMesh = m_CollisionMesh;
+                
+                //Ensure a unique mesh is created for the collision mesh
+                meshCollider.sharedMesh = new Mesh();
             }
             if (!state && meshCollider)
             {
@@ -130,14 +172,13 @@ namespace sc.splinemesher.pro.runtime
                     SetMeshCollider(true);
                 }
 #endif
-            
-                //Always use the dedicated collision mesh
-                if (!m_CollisionMesh)
+                
+                if (!meshCollider.sharedMesh)
                 {
-                    m_CollisionMesh = new Mesh();
+                    meshCollider.sharedMesh = new Mesh();
                 }
             
-                return m_CollisionMesh;
+                return meshCollider.sharedMesh;
             }
             set
             {
@@ -148,9 +189,8 @@ namespace sc.splinemesher.pro.runtime
                     SetMeshCollider(true);
                 }
 #endif
-            
-                m_CollisionMesh = value;
-                if (meshCollider) meshCollider.sharedMesh = value;
+                
+                meshCollider.sharedMesh = value;
             }
         }
 
@@ -189,11 +229,12 @@ namespace sc.splinemesher.pro.runtime
             if (meshCollider) meshCollider.enabled = state;
         }
 
-        public void SetColliderSettings(int layer, LayerMask includeLayers, LayerMask excludeLayers, bool isKinematic, bool convex, bool isTrigger, bool provideContacts)
+        public void SetColliderSettings(int layer, LayerMask includeLayers, LayerMask excludeLayers, bool isKinematic, bool convex, bool isTrigger, bool provideContacts, PhysicsMaterial physicsMaterial)
         {
             if (!meshCollider) return;
             
             meshCollider.gameObject.layer = layer;
+            meshCollider.sharedMaterial = physicsMaterial;
 #if UNITY_2022_3_OR_NEWER
             meshCollider.includeLayers = includeLayers;
             meshCollider.excludeLayers = excludeLayers;

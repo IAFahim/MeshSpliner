@@ -224,7 +224,7 @@ namespace sc.splinemesher.pro.runtime
             if (!splineContainer)
             {
                 splineCount = 0;
-                DisposeSplineCache();
+                DisposeNativeSplines();
                 return;
             }
             
@@ -235,7 +235,7 @@ namespace sc.splinemesher.pro.runtime
             Profiler.BeginSample($"[Spline Mesher] Rebuild Spline Cache (x{splineCount})");
             #endif
 
-            DisposeSplineCache();
+            DisposeNativeSplines();
             
             foreach (var spline in splineContainer.Splines)
             {
@@ -247,7 +247,7 @@ namespace sc.splinemesher.pro.runtime
             #endif
         }
         
-        private void DisposeSplineCache()
+        private void DisposeNativeSplines()
         {
             if (nativeSplines != null && nativeSplines.Count > 0)
             {

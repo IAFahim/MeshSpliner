@@ -25,6 +25,7 @@ namespace sc.splinemesher.pro.runtime
         private int2 gridSize;
         private float triangleSize;
         private float minTriangleSize;
+        private bool reversed;
         
         //Input
         [ReadOnly] private NativeArray<float3> points;
@@ -35,11 +36,12 @@ namespace sc.splinemesher.pro.runtime
         
         [WriteOnly] NativeList<int> triangles;
 
-        public void Setup(int2 gridSize, float triangleSize, NativeArray<float3> m_points, NativeArray<PointState> m_pointStates, NativeArray<int> m_indexMapping)
+        public void Setup(int2 gridSize, float triangleSize, bool reversed, NativeArray<float3> m_points, NativeArray<PointState> m_pointStates, NativeArray<int> m_indexMapping)
         {
             this.gridSize = gridSize;
             this.triangleSize = triangleSize;
             this.minTriangleSize = triangleSize * 1.7320f; //Sqrt(3)
+            this.reversed = reversed;
             this.points = m_points;
             this.pointStates = m_pointStates;
             this.indexMapping = m_indexMapping;
@@ -125,9 +127,18 @@ namespace sc.splinemesher.pro.runtime
             }
 
             //Valid triangle at this point, add it
-            triangles.Add(v0);
-            triangles.Add(v1);
-            triangles.Add(v2);
+            if (reversed)
+            {
+                triangles.Add(v2);
+                triangles.Add(v1);
+                triangles.Add(v0);
+            }
+            else
+            {
+                triangles.Add(v0);
+                triangles.Add(v1);
+                triangles.Add(v2);
+            }
         }
 
         public NativeList<int> GetTriangles()

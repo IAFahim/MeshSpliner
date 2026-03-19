@@ -14,6 +14,10 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+#if !UNITY_6000_0_OR_NEWER
+using PhysicsMaterial = UnityEngine.PhysicMaterial;
+#endif
+
 namespace sc.splinemesher.pro.runtime
 {
     [Serializable]
@@ -47,6 +51,11 @@ namespace sc.splinemesher.pro.runtime
             public bool snapToKnot;
             [Tooltip("Artificially push the spline curve inwards. Can result in vertices overlapping, especially in short turns.")]
             public float margin;
+
+            [Tooltip("Make the mesh visible from the underside")]
+            public bool reverseFaces;
+            [Tooltip("Flip the lighting orientation for the mesh")]
+            public bool flipNormals;
             
             [Tooltip("The accuracy of spline curve sampling. Higher values result in vertices neatly snapping to the curve. Use lower precision for large meshes, or when using a Margin to push the edge into geometry to hide it.")]
             public Structs.Accuracy accuracy;
@@ -208,6 +217,8 @@ namespace sc.splinemesher.pro.runtime
             [Tooltip("Applies to the Mesh Collider")]
             public LayerMask excludeLayers;
             public bool provideContacts;
+            
+            public PhysicsMaterial physicsMaterial;
             
             public static Collision Default()
             {

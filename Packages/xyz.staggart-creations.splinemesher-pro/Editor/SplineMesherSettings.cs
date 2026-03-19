@@ -123,7 +123,12 @@ namespace sc.splinemesher.pro.editor
                         EditorGUILayout.HelpBox("Call the SplineMesherEditor.GenerateLightmapUVs function from your external script", MessageType.Info);
                     }
 
+#if UNITY_6000_4_OR_NEWER
+                    SplineMesher[] splineMeshers = Object.FindObjectsByType<SplineMesher>();
+#else
                     SplineMesher[] splineMeshers = Object.FindObjectsByType<SplineMesher>(FindObjectsSortMode.None);
+#endif
+                    
                     List<SplineMesher> meshersNeedingUV = new List<SplineMesher>();
                     foreach (SplineMesher splineMesher in splineMeshers)
                     {

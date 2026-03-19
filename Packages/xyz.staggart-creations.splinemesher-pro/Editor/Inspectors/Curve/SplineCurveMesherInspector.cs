@@ -248,8 +248,10 @@ namespace sc.splinemesher.pro.editor
             }
         }
 
-        private void OnDisable()
+        new void OnDisable()
         {
+            base.OnDisable();
+            
             foreach (var section in sections)
             {
                 section.Disable();

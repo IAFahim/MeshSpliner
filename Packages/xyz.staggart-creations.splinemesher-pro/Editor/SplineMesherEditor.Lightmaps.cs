@@ -30,7 +30,11 @@ namespace sc.splinemesher.pro.editor
         /// </summary>
         public static void GenerateLightmapUVs()
         {
+            #if UNITY_6000_4_OR_NEWER
+            SplineMesher[] splineMeshers = Object.FindObjectsByType<SplineMesher>();
+            #else
             SplineMesher[] splineMeshers = Object.FindObjectsByType<SplineMesher>(FindObjectsSortMode.None);
+            #endif
             
             int count = 0;
             System.Diagnostics.Stopwatch lightmapUVUnwrapTimer = new System.Diagnostics.Stopwatch();

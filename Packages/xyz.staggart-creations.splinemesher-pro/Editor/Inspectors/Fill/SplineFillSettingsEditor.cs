@@ -12,6 +12,8 @@ namespace sc.splinemesher.pro.editor
             SerializedProperty triangleSize;
             SerializedProperty snapToKnot;
             SerializedProperty margin;
+            SerializedProperty reverseFaces;
+            SerializedProperty flipNormals;
             SerializedProperty accuracy;
             
             public override void OnEnable()
@@ -19,6 +21,8 @@ namespace sc.splinemesher.pro.editor
                 triangleSize = settings.FindPropertyRelative("triangleSize");
                 snapToKnot = settings.FindPropertyRelative("snapToKnot");
                 margin = settings.FindPropertyRelative("margin");
+                reverseFaces = settings.FindPropertyRelative("reverseFaces");
+                flipNormals = settings.FindPropertyRelative("flipNormals");
                 accuracy = settings.FindPropertyRelative("accuracy");
             }
 
@@ -28,10 +32,12 @@ namespace sc.splinemesher.pro.editor
                 
                 EditorGUILayout.PropertyField(triangleSize);
                 EditorGUILayout.PropertyField(margin);
+                EditorGUILayout.PropertyField(snapToKnot);
                 
                 EditorGUILayout.Separator();
                 
-                EditorGUILayout.PropertyField(snapToKnot);
+                EditorGUILayout.PropertyField(reverseFaces);
+                EditorGUILayout.PropertyField(flipNormals);
                 
                 EditorGUILayout.Separator();
                 
@@ -340,6 +346,7 @@ namespace sc.splinemesher.pro.editor
             private SerializedProperty includeLayers;
             private SerializedProperty excludeLayers;
             private SerializedProperty provideContacts;
+            private SerializedProperty physicsMaterial;
             
             public override void OnEnable()
             {
@@ -349,6 +356,7 @@ namespace sc.splinemesher.pro.editor
                 includeLayers = settings.FindPropertyRelative("includeLayers");
                 excludeLayers = settings.FindPropertyRelative("excludeLayers");
                 provideContacts = settings.FindPropertyRelative("provideContacts");
+                physicsMaterial = settings.FindPropertyRelative("physicsMaterial");
             }
 
             public override void OnInspectorGUI(ref bool changed)
@@ -363,9 +371,13 @@ namespace sc.splinemesher.pro.editor
                     EditorGUILayout.Separator();
                     
                     UI.DrawLayerDropdown(layer);
+                    EditorGUILayout.PropertyField(provideContacts);
+                    EditorGUILayout.PropertyField(physicsMaterial);
+                    
+                    EditorGUILayout.Separator();
+                    
                     EditorGUILayout.PropertyField(includeLayers, GUILayout.MaxWidth(EditorGUIUtility.labelWidth + 150f));
                     EditorGUILayout.PropertyField(excludeLayers, GUILayout.MaxWidth(EditorGUIUtility.labelWidth + 150f));
-                    EditorGUILayout.PropertyField(provideContacts);
                 }
 
                 changed |= EditorGUI.EndChangeCheck();

@@ -143,7 +143,7 @@ namespace sc.splinemesher.pro.runtime
             scaleCurve = new NativeCurve(settings.scaleOverCurve, Allocator.TempJob);
         }
 
-        public void Setup(Structs.InputMeshData inputMeshData, Structs.InputMeshData inputColliderData,
+        public void Setup(Structs.InputMeshData inputMeshData, bool createMesh, Structs.InputMeshData inputColliderData, bool createCollider,
             NativeSpline sourceSpline, NativeArray<Structs.SplinePoint> splinePoints, Structs.SegmentInfo tileInfo,
             float2 splineCurveRange,
             float trimmedSplineLength, Matrix4x4 outputWorldToLocal, CurveMeshSettings settings,
@@ -168,62 +168,32 @@ namespace sc.splinemesher.pro.runtime
             this.segmentLength = tileInfo.tileLength;
             this.meshLength = tileInfo.meshLength;
 
-            this.createMesh = !(settings.collision.enable && settings.collision.colliderOnly) && inputMeshData.IsCreated;
+            this.createMesh = createMesh;
+            
+            this.inputBounds = inputMeshData.bounds;
+            this.sourcePositions = inputMeshData.positions;
+            this.sourceVertexCount = inputMeshData.vertexCount;
+            this.sourceNormals = inputMeshData.normals;
+            this.sourceTangents = inputMeshData.tangents;
+            this.sourceUV0 = inputMeshData.uv;
+            this.sourceColors = inputMeshData.colors;
 
-            if (createMesh)
-            {
-                this.inputBounds = inputMeshData.bounds;
-                this.sourcePositions = inputMeshData.positions;
-                this.sourceVertexCount = inputMeshData.vertexCount;
-                this.sourceNormals = inputMeshData.normals;
-                this.sourceTangents = inputMeshData.tangents;
-                this.sourceUV0 = inputMeshData.uv;
-                this.sourceColors = inputMeshData.colors;
-
-                this.sourceTriangles = inputMeshData.sourceTriangles;
-                this.submeshCount = inputMeshData.submeshCount;
-                this.sourceSubmeshRanges = inputMeshData.sourceSubmeshRanges;
-            }
-            else
-            {
-                //Note, arrays need to be zero-initialized if no mesh is created
-                this.inputBounds = new Structs.BoundsData();
-                this.sourcePositions = new NativeArray<float3>(0, Allocator.Persistent);
-                this.sourceVertexCount = 0;
-                this.sourceNormals = new NativeArray<float3>(0, Allocator.Persistent);
-                this.sourceTangents = new NativeArray<float4>(0, Allocator.Persistent);
-                this.sourceUV0 = new NativeArray<float2>(0, Allocator.Persistent);
-                this.sourceColors = new NativeArray<float4>(0, Allocator.Persistent);
-                
-                this.sourceTriangles = new NativeArray<ushort>(0, Allocator.Persistent);
-                this.submeshCount = 0;
-                this.sourceSubmeshRanges = new NativeArray<int2>(0, Allocator.Persistent);
-            }
-
-            this.createCollider = settings.collision.enable && inputColliderData.IsCreated;
+            this.sourceTriangles = inputMeshData.sourceTriangles;
+            this.submeshCount = inputMeshData.submeshCount;
+            this.sourceSubmeshRanges = inputMeshData.sourceSubmeshRanges;
+            
+            this.createCollider = createCollider;
             
             //Debug.Log($"CurveToMesh.Setup: createMesh:{createMesh}. createCollider:{createCollider}");
             
-            if (createCollider)
-            {
-                this.sourceColliderPositions = inputColliderData.positions;
-                this.sourceColliderVertexCount = inputColliderData.vertexCount;
-                this.sourceColliderNormals = inputColliderData.normals;
-                this.sourceColliderTriangles = inputColliderData.sourceTriangles;
-                
-                //If no mesh is created, use the bounds from the collider data. This is important for the collider mesh to be generated correctly
-                if(!createMesh) inputBounds = inputColliderData.bounds;
-            }
-            else
-            {
-                this.sourceColliderPositions = new NativeArray<float3>(0, Allocator.Persistent);
-                this.sourceColliderVertexCount = 0;
-                this.sourceColliderNormals = new NativeArray<float3>(0, Allocator.Persistent);
-                this.sourceColliderTriangles = new NativeArray<ushort>(0, Allocator.Persistent);
-            }
-
-            if (sourceColliderPositions.IsCreated == false) Debug.LogError("sourceColliderPositions not created");
-
+            this.sourceColliderPositions = inputColliderData.positions;
+            this.sourceColliderVertexCount = inputColliderData.vertexCount;
+            this.sourceColliderNormals = inputColliderData.normals;
+            this.sourceColliderTriangles = inputColliderData.sourceTriangles;
+            
+            //If no mesh is created, use the bounds from the collider data. This is important for the collider mesh to be generated correctly
+            if(!this.createMesh) inputBounds = inputColliderData.bounds;
+            
             PrepareSettings(settings);
             PrepareOutput();
             
@@ -567,9 +537,21 @@ namespace sc.splinemesher.pro.runtime
                         float width = boundsSize.x * widthScale;
                         //Width over mesh
                         float x = (positions[v].x - bounds.min.x) * widthScale;
+
+                        float widthGradient = 0;
+                        //Run from edge inwards
+                        if (colorSettings.widthGradientMirrored)
+                        {
+                            widthGradient = Utilities.EdgeDistanceMask(x, width, colorSettings.widthGradientOffset, colorSettings.widthGradientFalloff, colorSettings.invertWidthGradient);
+                        }
+                        //Run from left to right
+                        else
+                        {
+                            widthGradient = Utilities.CalculateDistanceWeight(x, width + (1f/width),
+                                colorSettings.widthGradientOffset, colorSettings.widthGradientFalloff,
+                                0, 0, colorSettings.invertWidthGradient);
+                        }
                         
-                        float widthGradient = Utilities.EdgeDistanceMask(x, width, colorSettings.widthGradientOffset, colorSettings.widthGradientFalloff, colorSettings.invertWidthGradient);
-                    
                         int channel = (int)colorSettings.widthGradientChannel;
                     
                         vertexColor[channel] = BlendVertexColor(vertexColor, channel, widthGradient, colorSettings.widthBlendMode);
@@ -653,8 +635,8 @@ namespace sc.splinemesher.pro.runtime
 
         public void Dispose()
         {
-            //Input is disposed with ProcessInput job(s)
-
+            //Input is disposed with ProcessInput job(s). Arrays are used across multiple jobs, so aren't disposed in this one.
+            
             //Output mesh
             vertices.Dispose();
             indices.Dispose();

@@ -7,7 +7,7 @@ namespace sc.splinemesher.pro.editor
     public class AssetInfo
     {
         public const string ASSET_NAME = "Spline Mesher";
-        public const string VERSION = "1.0.5";
+        public const string VERSION = "1.0.6";
         public const int ASSET_ID = 338468;
         public const string DOC_URL = "https://staggart.xyz/support/documentation/spline-mesher-pro";
         public const string FORUM_URL = "https://forum.unity.com/threads/1565389/";

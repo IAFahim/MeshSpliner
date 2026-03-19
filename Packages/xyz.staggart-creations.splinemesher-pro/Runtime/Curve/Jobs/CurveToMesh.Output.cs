@@ -53,8 +53,8 @@ namespace sc.splinemesher.pro.runtime
         }
         
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-        public static readonly string kMeshName = "SplineMesh";
-        public static readonly string kColliderSuffix = "Collider";
+        public static readonly string kMeshSuffix = "_SplineMesh_";
+        public static readonly string kColliderSuffix = "_Collider_";
 #endif
         
         private static readonly MeshUpdateFlags noValidation = MeshUpdateFlags.DontNotifyMeshUsers | MeshUpdateFlags.DontRecalculateBounds | MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontResetBoneBounds;

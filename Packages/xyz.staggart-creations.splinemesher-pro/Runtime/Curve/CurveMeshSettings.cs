@@ -17,6 +17,10 @@ using UnityEngine.Serialization;
 using UnityEngine.Splines;
 using Cap = sc.splinemesher.pro.runtime.SplineCurveMesher.Cap;
 
+#if !UNITY_6000_0_OR_NEWER
+using PhysicsMaterial = UnityEngine.PhysicMaterial;
+#endif
+
 namespace sc.splinemesher.pro.runtime
 {
     /// <summary>
@@ -123,6 +127,7 @@ namespace sc.splinemesher.pro.runtime
         {
             public Material[] materials;
             public ShadowCastingMode shadowCastingMode = ShadowCastingMode.On;
+            
             public LightProbeUsage lightProbeUsage = LightProbeUsage.BlendProbes;
             public ReflectionProbeUsage reflectionProbeUsage = ReflectionProbeUsage.BlendProbesAndSkybox;
 
@@ -318,6 +323,7 @@ namespace sc.splinemesher.pro.runtime
             public bool invertWidthGradient;
             [Tooltip("Factor in the width scale of the mesh, so that the offset value remains consistent")]
             public bool widthGradientScaled;
+            public bool widthGradientMirrored;
             
             public float4 NativeBaseColor => new float4(baseColor.r, baseColor.g, baseColor.b, baseColor.a);
             
@@ -329,6 +335,7 @@ namespace sc.splinemesher.pro.runtime
                     pathIndexUnit = PathIndexUnit.Distance,
                     tipBlendMode = BlendMode.Max,
                     widthBlendMode = BlendMode.Max,
+                    widthGradientMirrored = true,
                     startGradientFalloff = 1f,
                     endGradientFalloff = 1f,
                 };
@@ -490,6 +497,8 @@ namespace sc.splinemesher.pro.runtime
             public bool convex;
             public bool isTrigger;
             public bool provideContacts;
+            
+            public PhysicsMaterial physicsMaterial;
             
             public static Collision Default()
             {

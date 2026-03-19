@@ -17,6 +17,8 @@ using UnityEditor;
 
 namespace sc.splinemesher.pro.runtime
 {
+    [AddComponentMenu("")] //Hide
+    [DisallowMultipleComponent]
     public class SplineMeshContainer : MonoBehaviour
     {
         //Important to track the container's owner, as duplicating a spawner (and thus its containers) would not update references (the copy will reference the original's containers)

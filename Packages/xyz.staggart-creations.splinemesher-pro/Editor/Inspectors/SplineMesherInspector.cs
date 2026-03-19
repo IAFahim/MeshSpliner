@@ -417,7 +417,11 @@ namespace sc.splinemesher.pro.editor
             }
             CleanupNullMaterialEditors();
 
+#if UNITY_6000_4_OR_NEWER
+            int id = mat.GetHashCode();
+#else
             int id = mat.GetInstanceID();
+#endif
             s_MaterialEditors.TryGetValue(id, out var materialEditor);
 
             // Create (or refresh) the cached editor for this material
@@ -484,7 +488,13 @@ namespace sc.splinemesher.pro.editor
                 EditorGUILayout.LabelField(new GUIContent($" Size: {memorySize}", EditorGUIUtility.IconContent("Profiler.Memory").image), EditorStyles.miniLabel);
             }
         }
-        
+
+        public void OnDisable()
+        {
+            //Dispose of spline cache when leaving the inspector
+            component.Dispose();
+        }
+
         public class Events : UI.Section.SectionEditor
         {
             private SerializedProperty rebuildWith;

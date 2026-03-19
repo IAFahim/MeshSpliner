@@ -551,6 +551,7 @@ namespace sc.splinemesher.pro.editor
             SerializedProperty widthGradientFalloff;
             SerializedProperty invertWidthGradient;
             SerializedProperty widthGradientScaled;
+            SerializedProperty widthGradientMirrored;
 
             public override void OnEnable()
             {
@@ -574,6 +575,7 @@ namespace sc.splinemesher.pro.editor
                 widthGradientFalloff = settings.FindPropertyRelative("widthGradientFalloff");
                 invertWidthGradient = settings.FindPropertyRelative("invertWidthGradient");
                 widthGradientScaled = settings.FindPropertyRelative("widthGradientScaled");
+                widthGradientMirrored = settings.FindPropertyRelative("widthGradientMirrored");
             }
 
             public override void OnInspectorGUI(ref bool changed)
@@ -633,6 +635,7 @@ namespace sc.splinemesher.pro.editor
                     
                     EditorGUILayout.PropertyField(invertWidthGradient, new GUIContent("Invert", invertWidthGradient.tooltip));
                     EditorGUILayout.PropertyField(widthGradientScaled, new GUIContent("Maintain Scale", widthGradientScaled.tooltip));
+                    EditorGUILayout.PropertyField(widthGradientMirrored, new GUIContent("Mirrored", widthGradientMirrored.tooltip));
 
                     EditorGUI.indentLevel--;
                 }
@@ -792,6 +795,7 @@ namespace sc.splinemesher.pro.editor
             SerializedProperty convex;
             SerializedProperty isTrigger;
             SerializedProperty provideContacts;
+            SerializedProperty physicsMaterial;
             
             private bool inputMeshReadable;
             
@@ -815,6 +819,7 @@ namespace sc.splinemesher.pro.editor
                 convex = settings.FindPropertyRelative("convex");
                 isTrigger = settings.FindPropertyRelative("isTrigger");
                 provideContacts = settings.FindPropertyRelative("provideContacts");
+                physicsMaterial = settings.FindPropertyRelative("physicsMaterial");
 
                 CheckInputMeshReadability();
             }
@@ -871,6 +876,8 @@ namespace sc.splinemesher.pro.editor
 
                     EditorGUILayout.LabelField("Collider", EditorStyles.boldLabel);
                     UI.DrawLayerDropdown(layer);
+                    EditorGUILayout.PropertyField(provideContacts);
+                    EditorGUILayout.PropertyField(physicsMaterial);
                     EditorGUILayout.PropertyField(includeLayers, GUILayout.MaxWidth(EditorGUIUtility.labelWidth + 150f));
                     EditorGUILayout.PropertyField(excludeLayers, GUILayout.MaxWidth(EditorGUIUtility.labelWidth + 150f));
                     
@@ -884,7 +891,6 @@ namespace sc.splinemesher.pro.editor
                         EditorGUI.indentLevel--;
                     }
 
-                    EditorGUILayout.PropertyField(provideContacts);
                 }
 
                 changed |= EditorGUI.EndChangeCheck();
